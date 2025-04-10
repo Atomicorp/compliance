@@ -1,0 +1,96 @@
+# Security Configuration Assessment
+# Runsafe Checks
+# Copyright (C) 2021 Atomicorp, Inc.
+#
+policy:
+  id: "runsafe_audit"
+  file: "runsafe_audit.yml"
+  name: "Runsafe Audit for Redhat Enterprise Linux 7 and 8"
+  description: "Audit for memory protection in externally facing services"
+  references:
+    - https://www.runsafesecurity.com/
+
+requirements:
+  title: "Check RHEL/Rocky/Centos family platform"
+  description: "Requirements for running the policy against RHEL 7/8 family."
+  condition: any
+  rules:
+    - 'f:/etc/redhat-release -> r:release 7'
+    - 'f:/etc/redhat-release -> r:release 8'
+    - 'f:/etc/system-release -> r:release 2'
+
+checks:
+
+### Runsafe
+  - id: 4700
+    title: "Ensure Loadtime Function Randomization (LFR) is enabled in Apache"
+    description: "Loadtime Function Randomization (LFR) is enabled in Apache" 
+    rationale: "The weakness that the Atomicorp platform has detected confirms that your system is vulnerable to a dangerous category of code reuse attacks. These attacks would allow an attacker to use the code in the software for an unintended purpose and thus take over the system. From there, they could remotely execute the code of their choice and cause significant damage. Example attacks could be privilege escalation, traversing to other areas of your environment, direct damage to the system causing downtime or data exfiltration...among others.
+
+Even though the software developer for this system may have good security practices in place, using rigorous code scanning, pen testing and the like, vulnerabilities still exist. Upgrading to the latest security patch does not ensure that your systems are hardened to the fullest extent necessary."
+    remediation: "https://wiki.atomicorp.com/wiki/index.php/Code_Reuse"
+    compliance:
+      - cis: ["1.5.3"]
+      - cis_csc: ["8.3"]
+      - pci_dss: ["2.2.4"]
+      - nist_800_53: ["CM.1"]
+      - tsc: ["CC5.2"]
+    condition: any
+    rules:
+      - 'not f:/usr/sbin/httpd'
+      - 'c:/usr/bin/objdump -x /usr/sbin/httpd -> r:txtrp'
+
+  - id: 4701
+    title: "Ensure Loadtime Function Randomization (LFR) is enabled in Nginx"
+    description: "Loadtime Function Randomization (LFR) is enabled in Nginx"
+    rationale: "The weakness that the Atomicorp platform has detected confirms that your system is vulnerable to a dangerous category of code reuse attacks. These attacks would allow an attacker to use the code in the software for an unintended purpose and thus take over the system. From there, they could remotely execute the code of their choice and cause significant damage. Example attacks could be privilege escalation, traversing to other areas of your environment, direct damage to the system causing downtime or data exfiltration...among others.
+
+Even though the software developer for this system may have good security practices in place, using rigorous code scanning, pen testing and the like, vulnerabilities still exist. Upgrading to the latest security patch does not ensure that your systems are hardened to the fullest extent necessary."
+    remediation: "https://wiki.atomicorp.com/wiki/index.php/Code_Reuse"
+    compliance:
+      - cis: ["1.5.3"]
+      - cis_csc: ["8.3"]
+      - pci_dss: ["2.2.4"]
+      - nist_800_53: ["CM.1"]
+      - tsc: ["CC5.2"]
+    condition: any
+    rules:
+      - 'not f:/usr/sbin/nginx'
+      - 'c:/usr/bin/objdump -x /usr/sbin/nginx -> r:txtrp'
+
+  - id: 4702
+    title: "Ensure Loadtime Function Randomization (LFR) is enabled in Redis"
+    description: "Loadtime Function Randomization (LFR) is enabled in Redis"
+    rationale: "The weakness that the Atomicorp platform has detected confirms that your system is vulnerable to a dangerous category of code reuse attacks. These attacks would allow an attacker to use the code in the software for an unintended purpose and thus take over the system. From there, they could remotely execute the code of their choice and cause significant damage. Example attacks could be privilege escalation, traversing to other areas of your environment, direct damage to the system causing downtime or data exfiltration...among others.
+
+Even though the software developer for this system may have good security practices in place, using rigorous code scanning, pen testing and the like, vulnerabilities still exist. Upgrading to the latest security patch does not ensure that your systems are hardened to the fullest extent necessary."
+    remediation: "https://wiki.atomicorp.com/wiki/index.php/Code_Reuse"
+    compliance:
+      - cis: ["1.5.3"]
+      - cis_csc: ["8.3"]
+      - pci_dss: ["2.2.4"]
+      - nist_800_53: ["CM.1"]
+      - tsc: ["CC5.2"]
+    condition: any
+    rules:
+      - 'not f:/usr/bin/redis-server'
+      - 'c:/usr/bin/objdump -x /usr/bin/redis-server -> r:txtrp'
+
+  - id: 4703
+    title: "Ensure Loadtime Function Randomization (LFR) is enabled in memcached"
+    description: "Loadtime Function Randomization (LFR) is enabled in memcache"
+    rationale: "The weakness that the Atomicorp platform has detected confirms that your system is vulnerable to a dangerous category of code reuse attacks. These attacks would allow an attacker to use the code in the software for an unintended purpose and thus take over the system. From there, they could remotely execute the code of their choice and cause significant damage. Example attacks could be privilege escalation, traversing to other areas of your environment, direct damage to the system causing downtime or data exfiltration...among others.
+
+Even though the software developer for this system may have good security practices in place, using rigorous code scanning, pen testing and the like, vulnerabilities still exist. Upgrading to the latest security patch does not ensure that your systems are hardened to the fullest extent necessary."
+    remediation: "https://wiki.atomicorp.com/wiki/index.php/Code_Reuse"
+    compliance:
+      - cis: ["1.5.3"]
+      - cis_csc: ["8.3"]
+      - pci_dss: ["2.2.4"]
+      - nist_800_53: ["CM.1"]
+      - tsc: ["CC5.2"]
+    condition: any
+    rules:
+      - 'not f:/usr/bin/memcached'
+      - 'c:/usr/bin/objdump -x /usr/bin/memcached -> r:txtrp'
+

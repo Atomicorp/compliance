@@ -1,0 +1,108 @@
+# Security Configuration Assessment
+# ClamAV Antivirus Configuration Audit
+# Copyright (C) 2024, Atomicorp Inc.
+#
+# This program is free software; you can redistribute it
+# and/or modify it under the terms of the GNU General Public
+# License (version 2) as published by the FSF - Free Software
+# Foundation
+
+policy:
+  id: "clamav_audit"
+  file: "clamav.yml"
+  name: "ClamAV configuration assessment"
+  description: "Guidance for establishing a secure configuration for ClamAV antivirus."
+  references:
+    - https://www.clamav.net/documents/configuration
+    - https://docs.clamav.net/manual/Usage/Configuration.html
+
+requirements:
+  title: "Check that ClamAV configuration files are present on the system"
+  description: "Requirements for running the SCA scan against the ClamAV configuration."
+  condition: any
+  rules:
+    - "f:$clamd_conf"
+    - "f:$freshclam_conf"
+
+variables:
+  $clamd_conf: /etc/clamd.conf,/etc/clamd.d/scan.conf
+  $freshclam_conf: /etc/freshclam.conf
+
+checks:
+  - id: 28100
+    title: "ClamAV: Ensure real-time scanning is enabled"
+    description: "The ClamAV daemon should be configured for real-time scanning."
+    rationale: "Real-time scanning helps detect malware as soon as it appears on the system."
+    remediation: "Enable the ScanOnAccess option in clamd configuration."
+    compliance:
+      - pci_dss: ["5.1", "5.2"]
+      - nist_800_53: ["SI-3"]
+    condition: all
+    rules:
+      - 'f:$clamd_conf -> !r:^# && r:ScanOnAccess && r:ScanOnAccess\s+yes'
+
+  - id: 28110
+    title: "ClamAV: Ensure automatic database updates are enabled"
+    description: "The freshclam daemon should be configured to automatically update virus databases."
+    rationale: "Regular updates to virus definitions are crucial for effective malware detection."
+    remediation: "Enable automatic updates in freshclam.conf and ensure Checks value is at least 24."
+    compliance:
+      - pci_dss: ["5.2"]
+      - nist_800_53: ["SI-3(2)"]
+    condition: all
+    rules:
+      - 'f:$freshclam_conf -> !r:^# && r:Checks && r:Checks\s+[2-9][4-9]|[3-9][0-9]'
+
+  - id: 28120
+    title: "ClamAV: Verify maximum file size scanning limits"
+    description: "Check if maximum file size limits are set appropriately."
+    rationale: "Setting appropriate file size limits prevents resource exhaustion while ensuring large files are still scanned."
+    remediation: "Set MaxFileSize and MaxScanSize to appropriate values (recommended: at least 100M)."
+    compliance:
+      - pci_dss: ["5.1"]
+      - nist_800_53: ["SI-3"]
+    condition: all
+    rules:
+      - 'f:$clamd_conf -> !r:^# && r:MaxFileSize && r:MaxFileSize\s+[1-9][0-9]{2}M|[1-9]G'
+
+  - id: 28130
+    title: "ClamAV: Check for appropriate permissions on configuration files"
+    description: "Configuration files should have secure permissions."
+    rationale: "Proper file permissions prevent unauthorized modifications to ClamAV configuration."
+    remediation: "Set permissions to 644 and ownership to root:root for configuration files."
+    compliance:
+      - pci_dss: ["7.1"]
+      - nist_800_53: ["AC-3", "AC-6"]
+    condition: all
+    rules:
+      - 'f:$clamd_conf -> p:644'
+      - 'f:$clamd_conf -> u:root'
+      - 'f:$freshclam_conf -> p:644'
+      - 'f:$freshclam_conf -> u:root'
+
+  - id: 28140
+    title: "ClamAV: Ensure log rotation is configured"
+    description: "Log files should be rotated to manage disk space."
+    rationale: "Log rotation prevents disk space exhaustion and maintains logging history."
+    remediation: "Configure LogRotate option in both clamd and freshclam configurations."
+    compliance:
+      - pci_dss: ["10.7"]
+      - nist_800_53: ["AU-4"]
+    condition: all
+    rules:
+      - 'f:$clamd_conf -> !r:^# && r:LogRotate && r:LogRotate\s+yes'
+      - 'f:$freshclam_conf -> !r:^# && r:LogRotate && r:LogRotate\s+yes'
+
+  - id: 28160
+    title: "Ensure clamav signatures are up to date."
+    description: "Clamav signatures out of date."
+    rationale: "Clamav needs to be up to date.."
+    remediation: "Update clamav signatures."
+    compliance:
+      - cis: [""]
+      - mitre_techniques: [""]
+      - mitre_tactics: [""]
+      - mitre_mitigation: [""]
+    condition: none
+    rules:
+      - 'not c:/var/ossec/modules/clamav/clam_version_check.sh -> Current' 
